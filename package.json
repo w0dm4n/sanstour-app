@@ -1,0 +1,38 @@
+{
+  "name": "site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 5630",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "optimize-images": "node scripts/optimize-images.mjs",
+    "serve:prod": "node scripts/serve-prod.mjs",
+    "shoot": "node scripts/shoot.mjs",
+    "compare": "node scripts/compare.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs"
+  },
+  "dependencies": {
+    "motion": "^14.2.0",
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "chrome-launcher": "^1.2.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "lighthouse": "^13.5.0",
+    "puppeteer-core": "^25.12.0",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

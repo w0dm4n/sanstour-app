@@ -1,0 +1,376 @@
+@import "tailwindcss";
+
+/*
+ * DA de Sanstour — source unique des tokens (référence : design/da-sanstour.md).
+ * Valeurs relevées dans la maquette Figma de nicow (« SANSTOUR », landing 6:106) avec Figwright.
+ * --font-rowdies est posé sur <html> par next/font (src/app/layout.tsx).
+ */
+@theme {
+  --font-sans: var(--font-rowdies), system-ui, sans-serif;
+
+  /* Fonds sombres */
+  --color-terre: #373023; /* fond de page de la landing */
+  --color-nuit: #201c14; /* fond des visuels réseaux (Profil, bannière Discord) */
+
+  /* Accents : un dégradé à deux teintes par univers (titres, surlignage, bouton) */
+  --color-village-clair: #cbff3b;
+  --color-village: #a5da3f;
+  --color-village-bouton: #bce252; /* haut du bouton vert */
+  --color-village-lumiere: #dbff6a; /* liseré lumineux des reliefs verts */
+  --color-combat-clair: #ffa73b;
+  --color-combat: #ff6325;
+  --color-royale-clair: #ff863b;
+  --color-royale: #ff2525;
+  --color-songes-clair: #64faca;
+  --color-songes: #21b0c3;
+
+  /* Typographie (Rowdies). Tailles et interlignes de la maquette à 1600 px. */
+  --text-titre: 80px;
+  --text-titre--line-height: 99px;
+  --text-accroche: 48px;
+  --text-accroche--line-height: 60px;
+  --text-corps: 24px;
+  --text-corps--line-height: 30px;
+  --text-bouton: 24px;
+  --text-bouton--line-height: 30px;
+  --text-bouton--letter-spacing: -0.03em;
+
+  /* Rayons */
+  --radius-bouton: 18px;
+  --radius-cadre: 40px;
+
+  /* Ombres */
+  --text-shadow-douce: 0 2px 1px rgb(0 0 0 / 0.1);
+  --drop-shadow-titre: 0 2px 1px rgb(0 0 0 / 0.1), 0 8px 16px rgb(0 0 0 / 0.25);
+  --shadow-bouton: 0 8px 16px rgb(0 0 0 / 0.25);
+
+  /* Mouvement */
+  --ease-sanstour: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Les univers : chaque section (et plus tard chaque écran du client) choisit son accent avec
+ * data-univers ; les composants lisent --accent-* sans connaître l'univers.
+ */
+[data-univers="village"] {
+  --accent-clair: var(--color-village-clair);
+  --accent: var(--color-village);
+  --accent-bouton-haut: var(--color-village-bouton);
+  --accent-lumiere: var(--color-village-lumiere);
+  --accent-ombre-interne: rgb(0 0 0 / 0.15);
+  --relief: url(#relief-village);
+}
+[data-univers="combat"] {
+  --accent-clair: var(--color-combat-clair);
+  --accent: var(--color-combat);
+  --accent-bouton-haut: var(--color-combat-clair);
+  --accent-lumiere: #fff;
+  --accent-ombre-interne: rgb(0 0 0 / 0.25);
+  --relief: url(#relief-clair);
+}
+[data-univers="royale"] {
+  --accent-clair: var(--color-royale-clair);
+  --accent: var(--color-royale);
+  --accent-bouton-haut: var(--color-royale-clair);
+  --accent-lumiere: #fff;
+  --accent-ombre-interne: rgb(0 0 0 / 0.25);
+  --relief: url(#relief-clair);
+}
+[data-univers="songes"] {
+  --accent-clair: var(--color-songes-clair);
+  --accent: var(--color-songes);
+  --accent-bouton-haut: var(--color-songes-clair);
+  --accent-lumiere: #fff;
+  --accent-ombre-interne: rgb(0 0 0 / 0.25);
+  --relief: url(#relief-clair);
+}
+
+@layer base {
+  html {
+    background: var(--color-terre);
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-weight: 300;
+  }
+  ::selection {
+    background: var(--color-village-clair);
+    color: var(--color-terre);
+  }
+}
+
+@layer components {
+  /*
+   * Échelle de la maquette : 1 px Figma vaut --u (art, proportionnel à la largeur de la scène) ou
+   * --t (texte, même valeur mais bornée entre 0,8 et 1,25 pour rester lisible de 1280 à 2752 px).
+   * La scène est un conteneur de requêtes : 100cqw = sa largeur, sans la barre de défilement.
+   */
+  .scene-cadre {
+    container-type: inline-size;
+  }
+  .scene {
+    --u: calc(100cqw / 1600);
+    --t: clamp(0.8px, var(--u), 1.25px);
+  }
+
+  /* Accroche (48) : texte blanc posé sur l'image. */
+  .accroche {
+    display: block;
+    font-weight: 400;
+    font-size: calc(48 * var(--t, 1px));
+    line-height: calc(60 * var(--t, 1px));
+    text-shadow: var(--text-shadow-douce);
+  }
+
+  /*
+   * Titre (80) : dégradé de l'univers, relief (ombres internes) par un filtre SVG
+   * (<ReliefFilters />), puis deux ombres portées. text-shadow ne va pas avec background-clip: text.
+   */
+  .titre {
+    display: block;
+    width: fit-content;
+    font-weight: 400;
+    font-size: calc(80 * var(--t, 1px));
+    line-height: calc(99 * var(--t, 1px));
+    background: linear-gradient(189deg, var(--accent-clair), var(--accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    filter: var(--relief) drop-shadow(0 2px 1px rgb(0 0 0 / 0.1)) drop-shadow(0 8px 16px rgb(0 0 0 / 0.25));
+  }
+
+  /* Texte courant (Light 24). */
+  .corps {
+    font-weight: 300;
+    font-size: calc(24 * var(--t, 1px));
+    line-height: calc(30 * var(--t, 1px));
+    text-shadow: var(--text-shadow-douce);
+  }
+
+  /* Mot-clé surligné au pinceau (masque tiré de la maquette), couleur de l'univers. */
+  .surlignage {
+    position: relative;
+    isolation: isolate;
+    background: none;
+    color: inherit;
+    white-space: nowrap;
+  }
+  .surlignage::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0.108em -0.12em -0.192em -0.2em;
+    background: linear-gradient(180deg, var(--accent-clair) 27%, var(--accent) 76%);
+    mask: url("/images/landing/surlignage.svg") center / 100% 100% no-repeat;
+  }
+
+  /* Bouton principal (« Jouer maintenant »). 251 × 62 à 1600 px. */
+  .bouton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(251 * var(--t, 1px));
+    height: calc(62 * var(--t, 1px));
+    padding-inline: calc(24 * var(--t, 1px));
+    border-radius: calc(18 * var(--t, 1px));
+    font-weight: 400;
+    font-size: calc(24 * var(--t, 1px));
+    line-height: calc(30 * var(--t, 1px));
+    letter-spacing: -0.03em;
+    color: #fff;
+    text-shadow: var(--text-shadow-douce);
+    background: linear-gradient(195deg, var(--accent-bouton-haut), var(--accent));
+    box-shadow:
+      var(--shadow-bouton),
+      inset 0 -3px 0 var(--accent-ombre-interne),
+      inset 0 3px 0 var(--accent-lumiere);
+    transition:
+      transform 160ms var(--ease-sanstour),
+      filter 160ms var(--ease-sanstour),
+      box-shadow 160ms var(--ease-sanstour);
+  }
+  [data-univers="village"] .bouton {
+    background: linear-gradient(180deg, var(--accent-bouton-haut), var(--accent));
+  }
+  /* États absents de la maquette : proposés par SITE (voir design/da-sanstour.md). */
+  .bouton:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06) saturate(1.05);
+  }
+  .bouton:active {
+    transform: translateY(1px);
+    box-shadow:
+      0 4px 8px rgb(0 0 0 / 0.25),
+      inset 0 -1px 0 var(--accent-ombre-interne),
+      inset 0 3px 0 var(--accent-ombre-interne);
+  }
+  .bouton:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bouton {
+      transition: none;
+    }
+    .bouton:hover,
+    .bouton:active {
+      transform: none;
+    }
+  }
+}
+
+/* ————— Landing : la scène ————— */
+@layer components {
+  .scene {
+    position: relative;
+    height: calc(var(--hauteur) * var(--u));
+    overflow: clip;
+    background: var(--color-terre);
+  }
+  .couche {
+    position: absolute;
+    left: calc(var(--x) * var(--u));
+    top: calc(var(--y) * var(--u));
+    width: calc(var(--w) * var(--u));
+    height: calc(var(--h) * var(--u));
+    pointer-events: none;
+  }
+  .couche-fond {
+    translate: 0 calc(var(--p, 0) * var(--amplitude, 0) * var(--u));
+  }
+  /* Grain de la maquette (effet « Noise » de la frame) : sur le décor, sous le logo et le texte. */
+  .grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: url("/images/landing/grain.png") 0 0 / 128px 128px repeat;
+  }
+  .logo {
+    position: absolute;
+    left: calc(73.5 * var(--u));
+    top: calc(64 * var(--u));
+    width: calc(575.19 * var(--t));
+    height: calc(258 * var(--t));
+  }
+  .contenu {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .bloc-texte {
+    position: absolute;
+    left: calc(var(--x) * var(--u));
+    top: calc(var(--y) * var(--u));
+    width: max-content;
+    pointer-events: auto;
+  }
+  /* Écarts de la maquette : le titre et le bouton débordent de 4 px à gauche (alignement optique). */
+  .bloc-texte .titre {
+    margin-top: calc(-10.5 * var(--t));
+    margin-left: calc(-4 * var(--t));
+  }
+  .bloc-texte .corps {
+    margin-top: calc(23.5 * var(--t));
+  }
+  .bloc-texte .corps > span {
+    display: block;
+  }
+  .bloc-texte .bouton {
+    margin-top: calc(42.5 * var(--t));
+    margin-left: calc(-4 * var(--t));
+  }
+}
+
+/*
+ * ————— Landing, mobile et tablette (< 1024 px) —————
+ * Pas de maquette mobile : proposition de SITE. Même scène, autre échelle (390 px de maquette = largeur
+ * de l'écran) et coordonnées --m* de chaque calque ; texte en flux sur toute la largeur.
+ */
+@layer components {
+  [data-bureau="non"] {
+    display: none;
+  }
+  @media (width < 1024px) {
+    .scene {
+      --u: calc(100cqw / 390);
+      --t: clamp(1px, var(--u), 1.6px);
+      height: calc(var(--hauteur-mobile) * var(--u));
+    }
+    [data-mobile="non"] {
+      display: none;
+    }
+    [data-bureau="non"] {
+      display: block;
+    }
+    .couche {
+      left: calc(var(--mx) * var(--u));
+      top: calc(var(--my) * var(--u));
+      width: calc(var(--mw) * var(--u));
+      height: calc(var(--mh) * var(--u));
+    }
+    .logo {
+      left: calc(45 * var(--u));
+      top: calc(30 * var(--u));
+      width: calc(300 * var(--u));
+      height: calc(134.6 * var(--u));
+    }
+    .bloc-texte {
+      left: calc(24 * var(--u));
+      right: calc(24 * var(--u));
+      top: calc(var(--my) * var(--u));
+      width: auto;
+    }
+    .accroche {
+      font-size: calc(22 * var(--t));
+      line-height: calc(28 * var(--t));
+      text-wrap: balance;
+    }
+    .titre {
+      font-size: calc(40 * var(--t));
+      line-height: calc(46 * var(--t));
+      text-wrap: balance;
+    }
+    .bloc-texte .titre {
+      margin-top: calc(-4 * var(--t));
+      margin-left: calc(-2 * var(--t));
+    }
+    .corps {
+      font-size: calc(17 * var(--t));
+      line-height: calc(24 * var(--t));
+    }
+    .bloc-texte .corps {
+      margin-top: calc(14 * var(--t));
+      max-width: calc(342 * var(--t));
+    }
+    .bloc-texte .corps > span {
+      display: inline;
+    }
+    .bouton {
+      min-width: calc(210 * var(--t));
+      height: calc(52 * var(--t));
+      padding-inline: calc(20 * var(--t));
+      border-radius: calc(16 * var(--t));
+      font-size: calc(20 * var(--t));
+      line-height: calc(26 * var(--t));
+    }
+    .bloc-texte .bouton {
+      margin-top: calc(24 * var(--t));
+      margin-left: 0;
+    }
+  }
+}
+
+/* Premier écran : le bloc du hero remonte si l'écran est trop bas pour montrer son bouton (ex. 2200 × 920). */
+@layer components {
+  @media (width >= 1024px) {
+    #village.bloc-texte {
+      top: min(calc(var(--y) * var(--u)), calc(100svh - 384.5 * var(--t)));
+    }
+  }
+}
